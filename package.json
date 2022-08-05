@@ -1,0 +1,73 @@
+{
+  "name": "yaxm",
+  "displayName": "Yet Another eXtended Markdown",
+  "description": "Syntax highlighting for YAXM language",
+  "version": "0.0.1",
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./"
+  },
+  "engines": {
+    "vscode": "^1.65.0"
+  },
+  "main": "./out/extension.js",
+  "categories": [
+    "Programming Languages"
+  ],
+  "configurationDefaults": {
+    "yaxm": {
+      "editor.semanticHighlighting.enabled": true
+    }
+  },
+  "contributes": {
+    "languages": [
+      {
+        "id": "yaxm",
+        "aliases": [
+          "YAXM",
+          "yaxm"
+        ],
+        "extensions": [
+          ".yaxm"
+        ],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "commands": [
+      {
+        "command": "extension.yaxm",
+        "title": "YAXM Hello World"
+      }
+    ],
+    "semanticTokenScopes": [
+      {
+        "scopes": {
+          "emphasis": ["markup.italic", "emphasis"],
+          "underline": ["markup.underline"],
+          "strikethrough": ["markup.strikethrough"],
+          "hr": ["meta.separator.markdown", "markup.strikethrough"],
+          "heading": ["markup.heading", "header"],
+          "bold": ["markup.bold", "strong"],
+          "math": ["meta.embedded.math.markdown"],
+          "code": ["markup.inline.raw.string.markdown"],
+          "quote": ["punctuation.definition.quote.begin.markdown", "markup.quote.markdown"],
+          "latex": ["markup.inserted"]
+        }
+      }
+    ]
+  },
+  "activationEvents": [
+    "onCommand:extension.yaxm",
+    "onLanguage:yaxm"
+  ],
+  "devDependencies": {
+    "@types/node": "^16.11.7",
+    "@types/vscode": "^1.42.0",
+    "@typescript-eslint/eslint-plugin": "^5.30.0",
+    "@typescript-eslint/parser": "^5.30.0",
+    "@md-to-latex/converter": "file:../../md-to-latex-converter",
+    "eslint": "^8.13.0",
+    "typescript": "^4.7.2"
+  }
+}
