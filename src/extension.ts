@@ -3,7 +3,14 @@
 import * as vscode from 'vscode';
 
 import * as yaxmAst from '@md-to-latex/converter/dist/ast/parsing/index';
-import { Node, NodeType, positionToTextPosition, splitLinesWithTextPositions, TextNode, textPositionEq, traverseNodeChildrenDeepDepth } from '@md-to-latex/converter/dist/ast/node';
+import {
+    Node,
+    NodeType,
+    positionToTextPosition,
+    splitLinesWithTextPositions,
+    TextNode,
+    traverseNodeChildrenDeepDepth,
+} from '@md-to-latex/converter/dist/ast/node';
 
 const enum EphemeralNodeType {
     MacroName = 'MacroName',
@@ -13,66 +20,51 @@ const enum EphemeralNodeType {
 }
 
 interface TokenMapItem {
-    nodeType: NodeType | EphemeralNodeType,
-    vscodeName: string,
+    nodeType: NodeType | EphemeralNodeType;
+    vscodeName: string;
 }
 
 const tokenTypesLegend: TokenMapItem[] = [
-    {nodeType: NodeType.Blockquote,
-    vscodeName: 'quote'},
-    {nodeType: NodeType.Code,
-    vscodeName: 'code'},
-    {nodeType: NodeType.CodeSpan,
-    vscodeName: 'enumMember'},
-    {nodeType: NodeType.Comment,
-    vscodeName: 'comment'},
-    {nodeType: NodeType.Del,
-    vscodeName: 'strikethrough'},
-    {nodeType: NodeType.Em,
-    vscodeName: 'emphasis'},
-    {nodeType: NodeType.Formula,
-    vscodeName: 'struct'},
-    {nodeType: NodeType.FormulaSpan,
-    vscodeName: 'struct'},
-    {nodeType: NodeType.Heading,
-    vscodeName: 'heading'},
-    {nodeType: NodeType.Hr,
-    vscodeName: 'hr'},
+    { nodeType: NodeType.Blockquote, vscodeName: 'quote' },
+    { nodeType: NodeType.Code, vscodeName: 'code' },
+    { nodeType: NodeType.CodeSpan, vscodeName: 'enumMember' },
+    { nodeType: NodeType.Comment, vscodeName: 'comment' },
+    { nodeType: NodeType.Del, vscodeName: 'strikethrough' },
+    { nodeType: NodeType.Em, vscodeName: 'emphasis' },
+    { nodeType: NodeType.Formula, vscodeName: 'struct' },
+    { nodeType: NodeType.FormulaSpan, vscodeName: 'struct' },
+    { nodeType: NodeType.Heading, vscodeName: 'heading' },
+    { nodeType: NodeType.Hr, vscodeName: 'hr' },
     // {nodeType: NodeType.Image,
     // vscodeName: 'class'},
-    {nodeType: NodeType.Latex,
-    vscodeName: 'latex'},
-    {nodeType: NodeType.LatexSpan,
-    vscodeName: 'latex'},
+    { nodeType: NodeType.Latex, vscodeName: 'latex' },
+    { nodeType: NodeType.LatexSpan, vscodeName: 'latex' },
     // {nodeType: NodeType.Link,
     // vscodeName: 'class'},
     // {nodeType: NodeType.OpCode,
     // vscodeName: 'macro'},
-    {nodeType: NodeType.TableControlCell,
-    vscodeName: 'regexp'}, //
-    {nodeType: NodeType.Strong,
-    vscodeName: 'bold'},
-    {nodeType: NodeType.Underline,
-    vscodeName: 'underline'},
+    { nodeType: NodeType.TableControlCell, vscodeName: 'regexp' }, //
+    { nodeType: NodeType.Strong, vscodeName: 'bold' },
+    { nodeType: NodeType.Underline, vscodeName: 'underline' },
+    { nodeType: NodeType.NonBreakingSpace, vscodeName: 'variable' },
+    { nodeType: NodeType.ThinNonBreakingSpace, vscodeName: 'regexp' },
 
-    {nodeType: EphemeralNodeType.MacroName,
-    vscodeName: 'macro'},
-    {nodeType: EphemeralNodeType.Label,
-    vscodeName: 'variable'},
-    {nodeType: EphemeralNodeType.Href,
-    vscodeName: 'method'},
-    {nodeType: EphemeralNodeType.Key,
-    vscodeName: 'keyword'},
+    { nodeType: EphemeralNodeType.MacroName, vscodeName: 'macro' },
+    { nodeType: EphemeralNodeType.Label, vscodeName: 'variable' },
+    { nodeType: EphemeralNodeType.Href, vscodeName: 'string' },
+    { nodeType: EphemeralNodeType.Key, vscodeName: 'keyword' },
 ];
 const tokenTypes = new Map<string, number>();
 
 tokenTypesLegend.forEach((v, i) => tokenTypes.set(v.nodeType, i));
 
-
 const legend = (function () {
     const tokenModifiersLegend: string[] = [];
 
-    return new vscode.SemanticTokensLegend(tokenTypesLegend.map(v => v.vscodeName), tokenModifiersLegend);
+    return new vscode.SemanticTokensLegend(
+        tokenTypesLegend.map(v => v.vscodeName),
+        tokenModifiersLegend,
+    );
 })();
 
 // this method is called when your extension is activated
@@ -97,8 +89,8 @@ export function activate(context: vscode.ExtensionContext) {
         vscode.languages.registerDocumentSemanticTokensProvider(
             { language: 'yaxm' },
             new DocumentSemanticTokensProvider(),
-            legend
-        )
+            legend,
+        ),
     );
 }
 
@@ -118,7 +110,9 @@ interface NodeWithProbKeys {
     keys?: string | TextNode;
 }
 
-class DocumentSemanticTokensProvider implements vscode.DocumentSemanticTokensProvider {
+class DocumentSemanticTokensProvider
+    implements vscode.DocumentSemanticTokensProvider
+{
     // onDidChangeSemanticTokens?: vscode.Event<void> | undefined;
 
     private getTokenId(node: Node): number | undefined {
@@ -126,7 +120,7 @@ class DocumentSemanticTokensProvider implements vscode.DocumentSemanticTokensPro
         if (mapped !== undefined) {
             return mapped;
         }
-        
+
         if ((node.parent as NodeWithProbMacroName)?.opcode === node) {
             return tokenTypes.get(EphemeralNodeType.MacroName);
         }
@@ -136,37 +130,51 @@ class DocumentSemanticTokensProvider implements vscode.DocumentSemanticTokensPro
         if ((node.parent as NodeWithProbHref)?.href === node) {
             return tokenTypes.get(EphemeralNodeType.Href);
         }
-        if (Object.values((node.parent as NodeWithProbKeys)?.keys ?? {}).includes(node)) {
+        if (
+            Object.values(
+                (node.parent as NodeWithProbKeys)?.keys ?? {},
+            ).includes(node)
+        ) {
             return tokenTypes.get(EphemeralNodeType.Key);
         }
     }
 
     async provideDocumentSemanticTokens(
         document: vscode.TextDocument,
-        token: vscode.CancellationToken
+        token: vscode.CancellationToken,
     ): Promise<vscode.SemanticTokens> {
-        const builder = new vscode.SemanticTokensBuilder()
+        const builder = new vscode.SemanticTokensBuilder();
         const text = document.getText();
         const lines = splitLinesWithTextPositions(text).map(v => v.str);
 
-        const { result, diagnostic } = yaxmAst.parseFile(text, document.fileName);
+        const { result, diagnostic } = yaxmAst.parseFile(
+            text,
+            document.fileName,
+        );
 
         const iter = traverseNodeChildrenDeepDepth(result);
-        let value = iter.next()
+        let value = iter.next();
         while (!value.done) {
             const node = value.value.node;
 
-            const tokenId = this.getTokenId(node)
+            const tokenId = this.getTokenId(node);
 
             if (tokenId === undefined) {
                 value = iter.next();
                 continue;
             }
 
-            const textStartPosition = positionToTextPosition(text, node.pos.start);
+            const textStartPosition = positionToTextPosition(
+                text,
+                node.pos.start,
+            );
             const textEndPosition = positionToTextPosition(text, node.pos.end);
 
-            for (let line = textStartPosition.line - 1; line < textEndPosition.line; ++line) {
+            for (
+                let line = textStartPosition.line - 1;
+                line < textEndPosition.line;
+                ++line
+            ) {
                 let column;
                 if (line === textStartPosition.line - 1) {
                     column = textStartPosition.column - 1;
@@ -177,7 +185,8 @@ class DocumentSemanticTokensProvider implements vscode.DocumentSemanticTokensPro
                 let length;
                 if (line === textEndPosition.line - 1) {
                     if (line === textStartPosition.line - 1) {
-                        length = textEndPosition.column - textStartPosition.column;
+                        length =
+                            textEndPosition.column - textStartPosition.column;
                     } else {
                         length = textEndPosition.column - 1;
                     }
@@ -187,19 +196,14 @@ class DocumentSemanticTokensProvider implements vscode.DocumentSemanticTokensPro
 
                 // console.log(`Amon line=${line} column=${column} length=${length}`)
 
-                builder.push(
-                    line,
-                    column,
-                    length,
-                    tokenId,
-                )
+                builder.push(line, column, length, tokenId);
             }
 
             value = iter.next();
         }
 
         const builderResult = builder.build();
-        console.log('ok, built')
+        console.log('ok, built');
         return builderResult;
     }
 }
