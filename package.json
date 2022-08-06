@@ -3,6 +3,9 @@
     "displayName": "Yet Another eXtended Markdown",
     "description": "Syntax highlighting for YAXM language",
     "version": "0.0.1",
+    "repository": {
+      "url": "https://github.com/markdown-to-latex/vscode-extension-yaxm"
+    },
     "scripts": {
         "vscode:prepublish": "npm run compile",
         "compile": "tsc -p ./",
@@ -89,15 +92,19 @@
         "onLanguage:yaxm"
     ],
     "devDependencies": {
-        "@types/node": "^16.11.7",
-        "@types/vscode": "^1.42.0",
-        "@typescript-eslint/eslint-plugin": "^5.30.0",
-        "@typescript-eslint/parser": "^5.30.0",
-        "eslint": "^8.13.0",
-        "typescript": "^4.7.2",
+        "@types/node": "^18.6.4",
+        "@types/vscode": "~1.65.0",
+        "@typescript-eslint/eslint-plugin": "^5.32.0",
+        "@typescript-eslint/parser": "^5.32.0",
+        "eslint": "^8.21.0",
+        "typescript": "^4.7.4",
         "prettier": "^2.7.1"
     },
     "dependencies": {
         "@md-to-latex/converter": "file:../../md-to-latex-converter"
+    },
+    "vsce": {
+      "dependencies": false,
+      "useYarn": false
     }
 }
