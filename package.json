@@ -4,8 +4,11 @@
     "description": "Syntax highlighting for YAXM language",
     "version": "0.0.1",
     "repository": {
+        "type": "git",
       "url": "https://github.com/markdown-to-latex/vscode-extension-yaxm"
     },
+    "author": "Anatolii Titov <a@toliak.ru>",
+    "publisher": "md-to-latex",
     "scripts": {
         "vscode:prepublish": "npm run compile",
         "compile": "tsc -p ./",
@@ -16,7 +19,7 @@
     "engines": {
         "vscode": "^1.65.0"
     },
-    "main": "./out/extension.js",
+    "main": "./dist/extension.js",
     "categories": [
         "Programming Languages"
     ],
@@ -101,10 +104,6 @@
         "prettier": "^2.7.1"
     },
     "dependencies": {
-        "@md-to-latex/converter": "file:../../md-to-latex-converter"
-    },
-    "vsce": {
-      "dependencies": false,
-      "useYarn": false
+        "@md-to-latex/converter": "^2.0.0-beta.3"
     }
 }
