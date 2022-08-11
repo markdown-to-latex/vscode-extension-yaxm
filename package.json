@@ -5,7 +5,7 @@
     "version": "0.0.1",
     "repository": {
         "type": "git",
-      "url": "https://github.com/markdown-to-latex/vscode-extension-yaxm"
+        "url": "https://github.com/markdown-to-latex/vscode-extension-yaxm"
     },
     "author": "Anatolii Titov <a@toliak.ru>",
     "publisher": "md-to-latex",
@@ -104,6 +104,6 @@
         "prettier": "^2.7.1"
     },
     "dependencies": {
-        "@md-to-latex/converter": "^2.0.0-beta.3"
+        "@md-to-latex/converter": "^2.0.0-beta.5"
     }
 }

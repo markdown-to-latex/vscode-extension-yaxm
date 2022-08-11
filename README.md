@@ -2,7 +2,6 @@
 
 YAXM stands for Yet Another eXtended Markdown.
 
-
 # Dev package
 
 ```bash

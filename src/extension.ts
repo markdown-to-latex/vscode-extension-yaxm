@@ -2,12 +2,12 @@
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
 
-import * as yaxmAst from '@md-to-latex/converter/dist/ast/parsing/index';
+import * as yaxmAst from '@md-to-latex/converter/dist/ast/parsing';
 import {
+    linesToTextPosition,
     Node,
     NodeType,
-    positionToTextPosition,
-    splitLinesWithTextPositions,
+    splitLinesWithPositions,
     TextNode,
     traverseNodeChildrenDeepDepth,
 } from '@md-to-latex/converter/dist/ast/node';
@@ -139,18 +139,49 @@ class DocumentSemanticTokensProvider
         }
     }
 
+    private __old_time: number | null = null;
+    private __check_time(name: string) {
+        const new_time = new Date().getTime();
+
+        if (this.__old_time === null) {
+            console.log(`[${name}] Saved new time`);
+            this.__old_time = new_time;
+            return;
+        }
+
+        console.log(`[${name}] Delta: ${new_time - this.__old_time}ms`);
+        this.__old_time = new_time;
+    }
+
     async provideDocumentSemanticTokens(
         document: vscode.TextDocument,
         token: vscode.CancellationToken,
     ): Promise<vscode.SemanticTokens> {
         const builder = new vscode.SemanticTokensBuilder();
         const text = document.getText();
-        const lines = splitLinesWithTextPositions(text).map(v => v.str);
+
+        this.__check_time('Got text');
+        const lines = splitLinesWithPositions(text).map(v => v.str);
+        this.__check_time('Split text');
 
         const { result, diagnostic } = yaxmAst.parseFile(
             text,
             document.fileName,
         );
+        this.__check_time('Parsed file');
+
+        {
+            const iter = traverseNodeChildrenDeepDepth(result);
+            let value = iter.next();
+            let counter = 0;
+            while (!value.done) {
+                ++counter;
+                value = iter.next();
+            }
+            this.__check_time(`Test traversing (count: ${counter})`);
+        }
+
+        const textLines = splitLinesWithPositions(text);
 
         const iter = traverseNodeChildrenDeepDepth(result);
         let value = iter.next();
@@ -164,11 +195,14 @@ class DocumentSemanticTokensProvider
                 continue;
             }
 
-            const textStartPosition = positionToTextPosition(
-                text,
+            const textStartPosition = linesToTextPosition(
+                textLines,
                 node.pos.start,
             );
-            const textEndPosition = positionToTextPosition(text, node.pos.end);
+            const textEndPosition = linesToTextPosition(
+                textLines,
+                node.pos.end,
+            );
 
             for (
                 let line = textStartPosition.line - 1;
@@ -201,9 +235,10 @@ class DocumentSemanticTokensProvider
 
             value = iter.next();
         }
+        this.__check_time('Traversed nodes');
 
         const builderResult = builder.build();
-        console.log('ok, built');
+        this.__check_time('Built the builder');
         return builderResult;
     }
 }
