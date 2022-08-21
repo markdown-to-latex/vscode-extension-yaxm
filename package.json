@@ -2,7 +2,7 @@
     "name": "yaxm",
     "displayName": "Yet Another eXtended Markdown",
     "description": "Syntax highlighting for YAXM language",
-    "version": "0.0.2",
+    "version": "0.0.3",
     "repository": {
         "type": "git",
         "url": "https://github.com/markdown-to-latex/vscode-extension-yaxm"
@@ -104,6 +104,6 @@
         "prettier": "^2.7.1"
     },
     "dependencies": {
-        "@md-to-latex/converter": "^2.0.0-beta.5"
+        "@md-to-latex/converter": "^2.0.0-beta.10"
     }
 }

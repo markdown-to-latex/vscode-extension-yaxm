@@ -17,6 +17,11 @@ const enum EphemeralNodeType {
     Label = 'Label',
     Href = 'Href',
     Key = 'Key',
+    LatexText = 'LatexText',
+    FormulaText = 'FormulaText',
+    CodeText = 'CodeText',
+    CodeLang = 'CodeLang',
+    ListBullet = 'ListBullet',
 }
 
 interface TokenMapItem {
@@ -26,18 +31,18 @@ interface TokenMapItem {
 
 const tokenTypesLegend: TokenMapItem[] = [
     { nodeType: NodeType.Blockquote, vscodeName: 'quote' },
-    { nodeType: NodeType.Code, vscodeName: 'code' },
+    // { nodeType: NodeType.Code, vscodeName: 'code' },
     { nodeType: NodeType.CodeSpan, vscodeName: 'enumMember' },
     { nodeType: NodeType.Comment, vscodeName: 'comment' },
     { nodeType: NodeType.Del, vscodeName: 'strikethrough' },
     { nodeType: NodeType.Em, vscodeName: 'emphasis' },
-    { nodeType: NodeType.Formula, vscodeName: 'struct' },
+    // { nodeType: NodeType.Formula, vscodeName: 'struct' },
     { nodeType: NodeType.FormulaSpan, vscodeName: 'struct' },
     { nodeType: NodeType.Heading, vscodeName: 'heading' },
     { nodeType: NodeType.Hr, vscodeName: 'hr' },
     // {nodeType: NodeType.Image,
     // vscodeName: 'class'},
-    { nodeType: NodeType.Latex, vscodeName: 'latex' },
+    // { nodeType: NodeType.Latex, vscodeName: 'latex' },
     { nodeType: NodeType.LatexSpan, vscodeName: 'latex' },
     // {nodeType: NodeType.Link,
     // vscodeName: 'class'},
@@ -53,6 +58,11 @@ const tokenTypesLegend: TokenMapItem[] = [
     { nodeType: EphemeralNodeType.Label, vscodeName: 'variable' },
     { nodeType: EphemeralNodeType.Href, vscodeName: 'string' },
     { nodeType: EphemeralNodeType.Key, vscodeName: 'keyword' },
+    { nodeType: EphemeralNodeType.LatexText, vscodeName: 'latex' },
+    { nodeType: EphemeralNodeType.FormulaText, vscodeName: 'struct' },
+    { nodeType: EphemeralNodeType.CodeText, vscodeName: 'code' },
+    { nodeType: EphemeralNodeType.CodeLang, vscodeName: 'macro' },
+    { nodeType: EphemeralNodeType.ListBullet, vscodeName: 'string' },
 ];
 const tokenTypes = new Map<string, number>();
 
@@ -107,7 +117,23 @@ interface NodeWithProbHref {
 }
 
 interface NodeWithProbKeys {
-    keys?: string | TextNode;
+    keys?: Record<string, string | TextNode>;
+}
+
+interface NodeWithProbCode {
+    code?: TextNode;
+}
+
+interface NodeWithProbText {
+    text?: string | TextNode;
+}
+
+interface NodeWithProbBullet {
+    bullet?: TextNode;
+}
+
+interface NodeWithProbLang {
+    lang?: TextNode;
 }
 
 class DocumentSemanticTokensProvider
@@ -133,9 +159,30 @@ class DocumentSemanticTokensProvider
         if (
             Object.values(
                 (node.parent as NodeWithProbKeys)?.keys ?? {},
-            ).includes(node)
+            ).includes(node as TextNode)
         ) {
             return tokenTypes.get(EphemeralNodeType.Key);
+        }
+        if ((node.parent as NodeWithProbCode)?.code === node) {
+            return tokenTypes.get(EphemeralNodeType.CodeText);
+        }
+        if (
+            (node.parent as NodeWithProbText)?.text === node &&
+            node.parent?.type === NodeType.Formula
+        ) {
+            return tokenTypes.get(EphemeralNodeType.FormulaText);
+        }
+        if (
+            (node.parent as NodeWithProbText)?.text === node &&
+            node.parent?.type === NodeType.Latex
+        ) {
+            return tokenTypes.get(EphemeralNodeType.LatexText);
+        }
+        if ((node.parent as NodeWithProbBullet)?.bullet === node) {
+            return tokenTypes.get(EphemeralNodeType.ListBullet);
+        }
+        if ((node.parent as NodeWithProbLang)?.lang === node) {
+            return tokenTypes.get(EphemeralNodeType.CodeLang);
         }
     }
 
