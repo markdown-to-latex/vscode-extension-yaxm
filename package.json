@@ -104,6 +104,6 @@
         "prettier": "^2.7.1"
     },
     "dependencies": {
-        "@md-to-latex/converter": "^2.0.0-beta.10"
+        "@md-to-latex/converter": "^2.0.0-beta.13"
     }
 }
